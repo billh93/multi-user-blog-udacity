@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Log In</title>
+  </head>
+
+  <body>
+    <h2>Log In</h2>
+    <a href="/signup">Sign Up</a>
+    <form method="post">
+        <label for="username">Username:</label>
+        <input id="username" type="text" name="username" value="{{username}}">
+        {{username_error}}
+        {{user_not_found}}
+        <br>
+        <label for="pass">Password:</label>
+        <input id="pass" type="password" name="password" value="">
+        {{incorrect_password}}
+        {{password_error}}
+        <br>
+        <button>Submit</button>
+    </form>
+  </body>
+
+</html>

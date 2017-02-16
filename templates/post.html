@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Post</title>
+    </head>
+    <body>
+            <a href="/"><h1>Blog Page</h1></a>
+            <a href="/newpost">Add a new post</a>
+            {% for post in posts %}
+                <h3>{{post.subject}}</h3>
+                <a href="/editpost/{{post.key().id()}}">Edit Post</a>
+                <hr>
+                <p>{{post.content}}</p>
+            {% endfor %}
+    </body>
+</html>
