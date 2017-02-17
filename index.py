@@ -184,8 +184,9 @@ class PostPage(Handler):
 		
 class MainPage(Handler):
 	def render_front(self):
+		user_cookie = self.request.cookies.get('user')
 		posts = db.GqlQuery("SELECT * FROM Post ORDER BY created DESC")
-		self.render("front.html", posts=posts)
+		self.render("front.html", posts=posts, user_cookie=user_cookie)
 	
 	def get(self):
 		self.render_front()
