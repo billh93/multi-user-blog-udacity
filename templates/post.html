@@ -23,6 +23,9 @@
                 <hr>
                 <p>{{post.content | safe}}</p>
                 <a href="/add-comment/{{post.key().id()}}">Add Comment</a>
+
+                    <a href="/like-post/{{post.key().id()}}">Like</a>
+
             {% endfor %}
             {% for comment in comments %}
                 <div class="comment-border">

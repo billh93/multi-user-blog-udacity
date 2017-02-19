@@ -250,6 +250,29 @@ class EditCommentPage(Handler):
 			            error=error)
 
 
+class LikePostHandler(Handler):
+	def get(self, post_id):
+		user_cookie = self.request.cookies.get('user')
+		user_id_cookie = user_cookie.split('|')[0]
+		check_like = db.GqlQuery("SELECT * FROM Like WHERE "
+		                         "user_id = :1 AND post_id = :2"
+		                         , int(user_id_cookie), int(post_id))
+		#if post id is empty run this
+	# User can unlike
+		if check_like.count():
+			# User can finally like any vote but only once
+			if int(user_id_cookie) == check_like.get().user_id:
+				self.write("Sorry, you can't like your own post.")
+		else:
+			l = Like(user_id=int(user_id_cookie), post_id=int(post_id))
+			l.put()
+			time.sleep(0.5)
+			self.redirect("/post/%d" % int(post_id))
+	
+	# if like doesn't have user_id and post_id field create it
+	# if user_id and post_id field exit delete it
+
+
 class DeleteCommentPage(Handler):
 	def get(self, comment_id):
 		user_cookie = self.request.cookies.get('user')
@@ -286,8 +309,6 @@ class PostPage(Handler):
 			
 			comment = db.Query(Comment).filter('post_id =', int(post_id)).order(
 				'-created')
-			# if user_id is in specific comment entity delete it
-			# TODO: Add edit/delete feature for comments who are owners of it
 			# TODO: Add like/unlike feature
 			
 			self.render("post.html", posts=[post], user_owns_post=user_owns_post,
@@ -493,5 +514,6 @@ app = webapp2.WSGIApplication([('/', MainPage),
                                ('/post/(\d+)', PostPage),
                                ('/add-comment/(\d+)', AddCommentPage),
                                ('/edit-comment/(\d+)', EditCommentPage),
-                               ('/delete-comment/(\d+)', DeleteCommentPage)],
+                               ('/delete-comment/(\d+)', DeleteCommentPage),
+                               ('/like-post/(\d+)', LikePostHandler)],
                               debug=True)
