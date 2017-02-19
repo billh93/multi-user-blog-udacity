@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit Post</title>
+</head>
+    <body>
+        {% for post in posts %}
+            <form method="post">
+                <label for="subject">
+                    <div>Subject:</div>
+                    <input type="text" id="subject" name="subject" value="{{post.subject}}">
+                </label>
+                <br>
+                <label for="content">
+                    <div>Content:</div>
+                    <textarea name="content" id="content">{{post.content | safe}}</textarea>
+                </label>
+                <br>
+                {{error}}
+                <br>
+                <input type="submit">
+            </form>
+            <a href="/post/{{post.key().id()}}">Cancel</a>
+        {% endfor %}
+    </body>
+</html>

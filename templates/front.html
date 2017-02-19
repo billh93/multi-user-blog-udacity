@@ -3,11 +3,16 @@
     <head>
         <meta charset="UTF-8">
         <title>Home Page</title>
+        <style>
+            .comment-border{
+                border: 1px solid black;
+            }
+        </style>
     </head>
     <body>
         <h1>Blog Page</h1>
         {% if user_cookie %}
-            <a href="/newpost">Add a new post</a>
+            <a href="/new-post">Add a new post</a>
         {% else %}
             <a href="/login">Log In</a>
             <a href="/signup">Sign Up</a>
@@ -16,7 +21,7 @@
         {% for post in posts %}
             <a href="/post/{{post.key().id()}}"><h3>{{post.subject}}</h3></a>
             <hr>
-            <p>{{post.content}}</p>
+            <p>{{post.content | safe}}</p>
         {% endfor %}
     </body>
 </html>

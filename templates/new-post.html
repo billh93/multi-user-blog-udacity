@@ -13,7 +13,7 @@
             <br>
             <label for="content">
                 <div>Content:</div>
-                <textarea name="content" id="content">{{content}}</textarea>
+                <textarea name="content" id="content">{{content | safe}}</textarea>
             </label>
             <br>
             {{error}}

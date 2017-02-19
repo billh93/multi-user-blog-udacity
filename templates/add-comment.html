@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Add a comment</title>
+</head>
+    <body>
+        <form method="post">
+            <label for="comment">
+                <div>Comment:</div>
+                <textarea name="comment" id="comment">{{comment}}</textarea>
+                <input type="hidden" value="{{post_id}}">
+            </label>
+            <br>
+            {{error}}
+            <br>
+            <input type="submit">
+        </form>
+    </body>
+</html>

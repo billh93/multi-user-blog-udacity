@@ -3,15 +3,35 @@
     <head>
         <meta charset="UTF-8">
         <title>Post</title>
+        <style>
+            .comment-border{
+                border: 1px solid black;
+            }
+        </style>
     </head>
     <body>
             <a href="/"><h1>Blog Page</h1></a>
-            <a href="/newpost">Add a new post</a>
+            <a href="/new-post">Add a new post</a>
             {% for post in posts %}
                 <h3>{{post.subject}}</h3>
-                <a href="/editpost/{{post.key().id()}}">Edit Post</a>
+                {% if user_owns_post %}
+                    <a href="/edit-post/{{post.key().id()}}">Edit Post</a>
+                    <form method="post">
+                        <input type="submit" value="Delete">
+                    </form>
+                {% endif %}
                 <hr>
-                <p>{{post.content}}</p>
+                <p>{{post.content | safe}}</p>
+                <a href="/add-comment/{{post.key().id()}}">Add Comment</a>
+            {% endfor %}
+            {% for comment in comments %}
+                <div class="comment-border">
+                    <p>{{comment.comment}}</p>
+                    {% if user_id_cookie == comment.user_id %}
+                        <a href="/edit-comment/{{comment.key().id()}}">Edit</a>
+                        <a href="/delete-comment/{{comment.key().id()}}">Delete</a>
+                    {% endif %}
+                </div>
             {% endfor %}
     </body>
 </html>

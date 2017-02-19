@@ -1,7 +1,7 @@
 import os
 import re
 import hashlib
-import logging
+import time
 from random import choice
 from string import ascii_lowercase
 
@@ -63,6 +63,7 @@ class Post(db.Model):
 	content = db.TextProperty(required=True)
 	user_id = db.IntegerProperty(required=True)
 	created = db.DateTimeProperty(auto_now_add=True)
+	last_modified = db.DateTimeProperty(auto_now=True)
 
 """ Join Query:
 SELECT link.* FROM link,user WHERE link.user_id = user.id
@@ -70,7 +71,7 @@ AND username = 'spez'
 """
 
 
-class Likes(db.Model):
+class Like(db.Model):
 	# If user likes a post, it will create a entity if it's not in the db
 	# If there is a post in db and user unlikes it delete
 	# entity by using the user_id and post_id
@@ -78,10 +79,12 @@ class Likes(db.Model):
 	post_id = db.IntegerProperty(required=True)
 	
 	
-class Comments(db.Model):
+class Comment(db.Model):
 	user_id = db.IntegerProperty(required=True)
 	post_id = db.IntegerProperty(required=True)
 	comment = db.TextProperty()
+	created = db.DateTimeProperty(auto_now_add=True)
+	last_modified = db.DateTimeProperty(auto_now=True)
 	
 
 class Handler(webapp2.RequestHandler):
@@ -96,21 +99,24 @@ class Handler(webapp2.RequestHandler):
 		self.write(self.render_str(template, **kw))
 
 
-class EditPage(Handler):
+class EditPostPage(Handler):
 	def get(self, posts_id):
 		user_cookie = self.request.cookies.get('user')
 		if user_cookie:
 			user_id_cookie = user_cookie.split('|')[0]
 			user_hash_cookie = user_cookie.split('|')[1]
 			db_user_id = User.get_by_id(int(user_id_cookie))
-			
 			if db_user_id:
 				if user_hash_cookie == db_user_id.password:
 					post = Post.get_by_id(int(posts_id))
-					if post:
-						self.render("editpost.html", posts=[post])
+					user_id_from_post = post.user_id
+					if user_id_from_post == int(user_id_cookie):
+						if post:
+							self.render("edit-post.html", posts=[post])
+						else:
+							self.redirect("/")
 					else:
-						self.redirect("/")
+						self.redirect('/')
 				else:
 					self.redirect('/signup')
 			else:
@@ -131,22 +137,21 @@ class EditPage(Handler):
 			self.redirect("/post/%d" % p.id())
 		else:
 			error = "We need the subject and some content!"
-			self.render("editpost.html", subject=subject,
+			self.render("edit-post.html", subject=subject,
 			            content=content,
 			            error=error)
 
 
-class FormPage(Handler):
+class AddPostPage(Handler):
 	def get(self):
 		user_cookie = self.request.cookies.get('user')
 		if user_cookie:
 			user_id_cookie = user_cookie.split('|')[0]
 			user_hash_cookie = user_cookie.split('|')[1]
 			db_user_id = User.get_by_id(int(user_id_cookie))
-			
 			if db_user_id:
 				if user_hash_cookie == db_user_id.password:
-					self.render("newpost.html")
+					self.render("new-post.html")
 				else:
 					self.redirect('/signup')
 			else:
@@ -168,24 +173,139 @@ class FormPage(Handler):
 			self.redirect("/post/%d" % p.id())
 		else:
 			error = "We need the subject and some content!"
-			self.render("newpost.html", subject=subject,
+			self.render("new-post.html", subject=subject,
 			            content=content,
 			            error=error)
 		
+
+class AddCommentPage(Handler):
+	def get(self, post_id):
+		user_cookie = self.request.cookies.get('user')
+		if user_cookie:
+			user_id_cookie = user_cookie.split('|')[0]
+			user_hash_cookie = user_cookie.split('|')[1]
+			db_user_id = User.get_by_id(int(user_id_cookie))
+			if db_user_id:
+				if user_hash_cookie == db_user_id.password:
+					self.render("add-comment.html", post_id=post_id)
+				else:
+					self.redirect('/signup')
+			else:
+				self.redirect('/signup')
+		else:
+			self.redirect('/signup')
 		
-class PostPage(Handler):
-	def get(self, posts_id):
-		post = Post.get_by_id(int(posts_id))
-		if post:
-			self.render("post.html", posts=[post])
+	def post(self, post_id):
+		comment = self.request.get("comment")
+		user_cookie = self.request.cookies.get('user')
+		user_id_cookie = user_cookie.split('|')[0]
+		if comment:
+			c = Comment(comment=comment, post_id=int(post_id),
+			            user_id=int(user_id_cookie))
+			c.put()
+			time.sleep(0.5)
+			self.redirect("/post/%d" % int(post_id))
+		else:
+			error = "We need a comment!"
+			self.render("comment.html", comment=comment, error=error)
+		
+		
+class EditCommentPage(Handler):
+	def get(self, comment_id):
+		user_cookie = self.request.cookies.get('user')
+		if user_cookie:
+			user_id_cookie = user_cookie.split('|')[0]
+			user_hash_cookie = user_cookie.split('|')[1]
+			db_user_id = User.get_by_id(int(user_id_cookie))
+			if db_user_id:
+				if user_hash_cookie == db_user_id.password:
+					comment = Comment.get_by_id(int(comment_id))
+					user_id_from_comment = comment.user_id
+					if user_id_from_comment == int(user_id_cookie):
+						if comment:
+							self.render("edit-comment.html", comments=[comment])
+						else:
+							self.redirect("/")
+					else:
+						self.redirect('/')
+				else:
+					self.redirect('/')
+			else:
+				self.redirect('/')
+		else:
+			self.redirect('/')
+	
+	def post(self, comment_id):
+		comment = self.request.get("comment")
+		post_id = self.request.get("post_id")
+		if comment:
+			c = Comment.get_by_id(int(comment_id))
+			c.comment = comment
+			c.put()
+			time.sleep(0.5)
+			self.redirect("/post/%d" % int(post_id))
+		else:
+			error = "We need the comment"
+			self.render("edit-comment.html", comment=comment,
+			            error=error)
+
+
+class DeleteCommentPage(Handler):
+	def get(self, comment_id):
+		user_cookie = self.request.cookies.get('user')
+		user_id_cookie = user_cookie.split('|')[0]
+		comment = Comment.get_by_id(int(comment_id))
+		if int(user_id_cookie) == comment.user_id:
+			self.render("delete-comment.html", comments=[comment])
 		else:
 			self.redirect("/")
-
+		
+	def post(self, comment_id):
+		post_id = self.request.get("post_id")
+		comment = Comment.get_by_id(int(comment_id))
+		comment.delete()
+		time.sleep(0.5)
+		self.redirect("/post/%d" % int(post_id))
+			
+		
+class PostPage(Handler):
+	def get(self, post_id):
+		user_cookie = self.request.cookies.get('user')
+		user_id_cookie = user_cookie.split('|')[0]
+		post = Post.get_by_id(int(post_id))
+		user_id_from_post = post.user_id
+		if post:
+			if user_cookie:
+				if user_id_from_post == int(user_id_cookie):
+					user_owns_post = True
+				else:
+					user_owns_post = False
+			else:
+				user_owns_post = False
+				user_id_cookie = False
+			
+			comment = db.Query(Comment).filter('post_id =', int(post_id)).order(
+				'-created')
+			# if user_id is in specific comment entity delete it
+			# TODO: Add edit/delete feature for comments who are owners of it
+			# TODO: Add like/unlike feature
+			
+			self.render("post.html", posts=[post], user_owns_post=user_owns_post,
+			            comments=comment, user_id_cookie=int(user_id_cookie))
+		else:
+			self.redirect("/")
+			
+	def post(self, post_id):
+		post = Post.get_by_id(int(post_id))
+		post.delete()
+		time.sleep(0.5)
+		self.redirect("/")
+		
 		
 class MainPage(Handler):
 	def render_front(self):
 		user_cookie = self.request.cookies.get('user')
-		posts = db.GqlQuery("SELECT * FROM Post ORDER BY created DESC")
+		posts = Post.all().order('-created')
 		self.render("front.html", posts=posts, user_cookie=user_cookie)
 	
 	def get(self):
@@ -313,6 +433,7 @@ class LoginHandler(Handler):
 		if not valid_password(password):
 			params['password_error'] = "That wasn't a valid password."
 			have_error = True
+			
 		if have_error:
 			self.render('signup.html', **params)
 		else:
@@ -343,6 +464,7 @@ class LoginHandler(Handler):
 class LogoutHandler(Handler):
 	def get(self):
 		user_cookie = self.request.cookies.get('user')
+		
 		if user_cookie:
 			user_id_cookie = user_cookie.split('|')[0]
 			user_hash_cookie = user_cookie.split('|')[1]
@@ -366,6 +488,10 @@ app = webapp2.WSGIApplication([('/', MainPage),
                                ('/login', LoginHandler),
                                ('/welcome', WelcomeHandler),
                                ('/logout', LogoutHandler),
-                               ('/newpost', FormPage),
-                               ('/editpost/(\d+)', EditPage),
-                               ('/post/(\d+)', PostPage)], debug=True)
+                               ('/new-post', AddPostPage),
+                               ('/edit-post/(\d+)', EditPostPage),
+                               ('/post/(\d+)', PostPage),
+                               ('/add-comment/(\d+)', AddCommentPage),
+                               ('/edit-comment/(\d+)', EditCommentPage),
+                               ('/delete-comment/(\d+)', DeleteCommentPage)],
+                              debug=True)
