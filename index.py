@@ -65,16 +65,8 @@ class Post(db.Model):
 	created = db.DateTimeProperty(auto_now_add=True)
 	last_modified = db.DateTimeProperty(auto_now=True)
 
-""" Join Query:
-SELECT link.* FROM link,user WHERE link.user_id = user.id
-AND username = 'spez'
-"""
-
 
 class Like(db.Model):
-	# If user likes a post, it will create a entity if it's not in the db
-	# If there is a post in db and user unlikes it delete
-	# entity by using the user_id and post_id
 	user_id = db.IntegerProperty(required=True)
 	post_id = db.IntegerProperty(required=True)
 	
@@ -253,24 +245,28 @@ class EditCommentPage(Handler):
 class LikePostHandler(Handler):
 	def get(self, post_id):
 		user_cookie = self.request.cookies.get('user')
-		user_id_cookie = user_cookie.split('|')[0]
-		check_like = db.GqlQuery("SELECT * FROM Like WHERE "
-		                         "user_id = :1 AND post_id = :2"
-		                         , int(user_id_cookie), int(post_id))
-		#if post id is empty run this
-	# User can unlike
-		if check_like.count():
-			# User can finally like any vote but only once
-			if int(user_id_cookie) == check_like.get().user_id:
+		if user_cookie:
+			user_id_cookie = user_cookie.split('|')[0]
+			check_like = db.GqlQuery("SELECT * FROM Like WHERE "
+			                         "user_id = :1 AND post_id = :2",
+			                         int(user_id_cookie), int(post_id))
+			can_user_like = Post.get_by_id(int(post_id))
+			if int(user_id_cookie) == can_user_like.user_id:
 				self.write("Sorry, you can't like your own post.")
+			else:
+				if check_like.count():
+					if int(user_id_cookie) == check_like.get().user_id:
+						users_like = check_like[0]
+						users_like.delete()
+						time.sleep(0.5)
+						self.redirect("/post/%d" % int(post_id))
+				else:
+					l = Like(user_id=int(user_id_cookie), post_id=int(post_id))
+					l.put()
+					time.sleep(0.5)
+					self.redirect("/post/%d" % int(post_id))
 		else:
-			l = Like(user_id=int(user_id_cookie), post_id=int(post_id))
-			l.put()
-			time.sleep(0.5)
-			self.redirect("/post/%d" % int(post_id))
-	
-	# if like doesn't have user_id and post_id field create it
-	# if user_id and post_id field exit delete it
+			self.redirect("/login")
 
 
 class DeleteCommentPage(Handler):
@@ -294,11 +290,11 @@ class DeleteCommentPage(Handler):
 class PostPage(Handler):
 	def get(self, post_id):
 		user_cookie = self.request.cookies.get('user')
-		user_id_cookie = user_cookie.split('|')[0]
 		post = Post.get_by_id(int(post_id))
 		user_id_from_post = post.user_id
 		if post:
 			if user_cookie:
+				user_id_cookie = user_cookie.split('|')[0]
 				if user_id_from_post == int(user_id_cookie):
 					user_owns_post = True
 				else:
@@ -307,12 +303,20 @@ class PostPage(Handler):
 				user_owns_post = False
 				user_id_cookie = False
 			
+			check_like = db.GqlQuery("SELECT * FROM Like WHERE "
+			                         "user_id = :1 AND post_id = :2",
+			                         int(user_id_cookie), int(post_id))
+			if check_like.count():
+				if_user_liked = True
+			else:
+				if_user_liked = False
+			
 			comment = db.Query(Comment).filter('post_id =', int(post_id)).order(
 				'-created')
-			# TODO: Add like/unlike feature
 			
 			self.render("post.html", posts=[post], user_owns_post=user_owns_post,
-			            comments=comment, user_id_cookie=int(user_id_cookie))
+			            comments=comment, user_id_cookie=int(user_id_cookie),
+			            if_user_liked=if_user_liked)
 		else:
 			self.redirect("/")
 			
@@ -412,9 +416,7 @@ class SignupHandler(Handler):
 				user = User(username=username, password=user_hash,
 				            salt=user_salt, email=email)
 				user.put()
-				
 				user_id = user.key().id()
-				
 				user_info = "%s|%s" % (user_id, user_hash)
 				
 				self.response.headers['Content-Type'] = 'text/plain'
