@@ -1,4 +1,5 @@
 from models import *
+from handlers.helpers import *
 
 
 class WelcomeHandler(Handler):

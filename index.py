@@ -1,8 +1,8 @@
 from models import *
 from handlers.helpers import *
 from handlers.users import *
-from handlers.comments import *
 from handlers.posts import *
+from handlers.comments import *
 from handlers.likes import *
 
 
