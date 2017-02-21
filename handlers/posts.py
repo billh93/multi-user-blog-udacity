@@ -11,7 +11,7 @@ class AddPostPage(Handler):
             db_user_id = User.get_by_id(int(user_id_cookie))
             if db_user_id:
                 if user_hash_cookie == db_user_id.password:
-                    self.render("new-post.html")
+                    self.render("new-post.html", user_cookie=user_cookie)
                 else:
                     self.redirect('/signup')
             else:
@@ -34,7 +34,7 @@ class AddPostPage(Handler):
         else:
             error = "We need the subject and some content!"
             self.render("new-post.html", subject=subject,
-                        content=content,
+                        content=content, user_cookie=user_cookie,
                         error=error)
 
 
@@ -52,7 +52,8 @@ class EditPostPage(Handler):
                     user_id_from_post = post.user_id
                     if user_id_from_post == int(user_id_cookie):
                         if post:
-                            self.render("edit-post.html", posts=[post])
+                            self.render("edit-post.html", posts=[post],
+                                        user_cookie=user_cookie)
                         else:
                             self.redirect("/")
                     else:
@@ -65,6 +66,7 @@ class EditPostPage(Handler):
             self.redirect('/signup')
 
     def post(self, posts_id):
+        user_cookie = self.request.cookies.get('user')
         subject = self.request.get("subject")
         content = self.request.get("content")
 
@@ -78,7 +80,7 @@ class EditPostPage(Handler):
         else:
             error = "We need the subject and some content!"
             self.render("edit-post.html", subject=subject,
-                        content=content,
+                        content=content, user_cookie=user_cookie,
                         error=error)
 
 
@@ -116,6 +118,7 @@ class PostPage(Handler):
                 user_owns_post=user_owns_post,
                 comments=comment,
                 user_id_cookie=int(user_id_cookie),
+                user_cookie=user_cookie,
                 if_user_liked=if_user_liked)
         else:
             self.redirect("/")

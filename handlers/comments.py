@@ -11,7 +11,8 @@ class AddCommentPage(Handler):
             db_user_id = User.get_by_id(int(user_id_cookie))
             if db_user_id:
                 if user_hash_cookie == db_user_id.password:
-                    self.render("add-comment.html", post_id=post_id)
+                    self.render("add-comment.html", post_id=post_id,
+                                user_cookie=user_cookie)
                 else:
                     self.redirect('/signup')
             else:
@@ -31,7 +32,8 @@ class AddCommentPage(Handler):
             self.redirect("/post/%d" % int(post_id))
         else:
             error = "We need a comment!"
-            self.render("comment.html", comment=comment, error=error)
+            self.render("comment.html", comment=comment, error=error,
+                        user_cookie=user_cookie)
 
 
 class EditCommentPage(Handler):
@@ -49,7 +51,8 @@ class EditCommentPage(Handler):
                     if user_id_from_comment == int(user_id_cookie):
                         if comment:
                             self.render(
-                                "edit-comment.html", comments=[comment])
+                                "edit-comment.html", comments=[comment],
+                                user_cookie=user_cookie)
                         else:
                             self.redirect("/")
                     else:
@@ -62,6 +65,7 @@ class EditCommentPage(Handler):
             self.redirect('/')
 
     def post(self, comment_id):
+        user_cookie = self.request.cookies.get('user')
         comment = self.request.get("comment")
         post_id = self.request.get("post_id")
         if comment:
@@ -73,6 +77,7 @@ class EditCommentPage(Handler):
         else:
             error = "We need the comment"
             self.render("edit-comment.html", comment=comment,
+                        user_cookie=user_cookie,
                         error=error)
 
 
@@ -83,7 +88,8 @@ class DeleteCommentPage(Handler):
         user_id_cookie = user_cookie.split('|')[0]
         comment = Comment.get_by_id(int(comment_id))
         if int(user_id_cookie) == comment.user_id:
-            self.render("delete-comment.html", comments=[comment])
+            self.render("delete-comment.html", comments=[comment],
+                        user_cookie=user_cookie)
         else:
             self.redirect("/")
 

@@ -24,7 +24,8 @@ class WelcomeHandler(Handler):
 
             if db_user_id:
                 if user_hash_cookie == db_user_id.password:
-                    self.render("welcome.html", username=db_user_id.username)
+                    self.render("welcome.html", username=db_user_id.username,
+                                user_cookie=user_cookie)
                 else:
                     self.redirect('/signup')
             else:
