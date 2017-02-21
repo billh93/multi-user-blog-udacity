@@ -28,8 +28,8 @@ class Handler(webapp2.RequestHandler):
 
     def render(self, template, **kw):
         self.write(self.render_str(template, **kw))
-        
-        
+
+
 class User(db.Model):
     username = db.StringProperty(required=True)
     password = db.StringProperty(required=True)

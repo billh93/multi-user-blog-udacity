@@ -33,7 +33,7 @@ class AddCommentPage(Handler):
             error = "We need a comment!"
             self.render("comment.html", comment=comment, error=error)
 
-            
+
 class EditCommentPage(Handler):
 
     def get(self, comment_id):
@@ -74,7 +74,7 @@ class EditCommentPage(Handler):
             error = "We need the comment"
             self.render("edit-comment.html", comment=comment,
                         error=error)
-            
+
 
 class DeleteCommentPage(Handler):
 

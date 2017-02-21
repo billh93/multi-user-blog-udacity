@@ -1,5 +1,6 @@
 from models import *
 
+
 class LikePostHandler(Handler):
 
     def get(self, post_id):

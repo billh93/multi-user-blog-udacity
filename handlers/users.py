@@ -11,7 +11,7 @@ class MainPage(Handler):
 
     def get(self):
         self.render_front()
-        
+
 
 class WelcomeHandler(Handler):
 

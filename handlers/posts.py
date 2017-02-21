@@ -36,7 +36,7 @@ class AddPostPage(Handler):
             self.render("new-post.html", subject=subject,
                         content=content,
                         error=error)
-            
+
 
 class EditPostPage(Handler):
 
@@ -81,7 +81,7 @@ class EditPostPage(Handler):
                         content=content,
                         error=error)
 
-            
+
 class PostPage(Handler):
 
     def get(self, post_id):
