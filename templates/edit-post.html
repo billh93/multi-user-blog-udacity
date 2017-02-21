@@ -1,10 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Edit Post</title>
-</head>
-    <body>
+{% extends "base.html" %}
+{% block title %} Edit Post {% endblock %}
+{% block content %}
         {% for post in posts %}
             <form method="post">
                 <label for="subject">
@@ -23,5 +19,4 @@
             </form>
             <a href="/post/{{post.key().id()}}">Cancel</a>
         {% endfor %}
-    </body>
-</html>
+{% endblock %}}

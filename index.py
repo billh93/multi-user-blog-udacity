@@ -5,17 +5,6 @@ from handlers.posts import *
 from handlers.comments import *
 from handlers.likes import *
 
-
-class MainPage(Handler):
-
-    def render_front(self):
-        user_cookie = self.request.cookies.get('user')
-        posts = Post.all().order('-created')
-        self.render("front.html", posts=posts, user_cookie=user_cookie)
-
-    def get(self):
-        self.render_front()
-
 app = webapp2.WSGIApplication([('/', MainPage),
                                ('/signup', SignupHandler),
                                ('/login', LoginHandler),

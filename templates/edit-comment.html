@@ -1,23 +1,18 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Edit Comment</title>
-</head>
-    <body>
-        {% for comment in comments %}
-            <form method="post">
-                <label for="comment">
-                    <div>Comment:</div>
-                    <textarea name="comment" id="comment">{{comment.comment}}</textarea>
-                </label>
-                <input type="hidden" name="post_id" value="{{comment.post_id}}">
-                <br>
-                {{error}}
-                <br>
-                <input type="submit">
-            </form>
-            <a href="/post/{{comment.post_id}}">Cancel</a>
-        {% endfor %}
-    </body>
-</html>
+{% extends "base.html" %}
+{% block title %} Edit Comment {% endblock %}
+{% block content %}
+    {% for comment in comments %}
+        <form method="post">
+            <label for="comment">
+                <div>Comment:</div>
+                <textarea name="comment" id="comment">{{comment.comment}}</textarea>
+            </label>
+            <input type="hidden" name="post_id" value="{{comment.post_id}}">
+            <br>
+            {{error}}
+            <br>
+            <input type="submit">
+        </form>
+        <a href="/post/{{comment.post_id}}">Cancel</a>
+    {% endfor %}
+{% endblock %}}

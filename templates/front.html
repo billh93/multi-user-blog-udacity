@@ -1,21 +1,9 @@
-<!DOCTYPE html>
-<html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <title>Home Page</title>
-        <style>
-            .comment-border{
-                border: 1px solid black;
-            }
-        </style>
-    </head>
-    <body>
+{% extends "base.html" %}
+{% block title %} Home Page {% endblock %}
+{% block content %}
         <h1>Blog Page</h1>
         {% if user_cookie %}
             <a href="/new-post">Add a new post</a>
-        {% else %}
-            <a href="/login">Log In</a>
-            <a href="/signup">Sign Up</a>
         {% endif %}
         <br>
         {% for post in posts %}
@@ -23,5 +11,4 @@
             <hr>
             <p>{{post.content | safe}}</p>
         {% endfor %}
-    </body>
-</html>
+{% endblock %}

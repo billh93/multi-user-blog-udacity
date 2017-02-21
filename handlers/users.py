@@ -2,6 +2,17 @@ from models import *
 from handlers.helpers import *
 
 
+class MainPage(Handler):
+
+    def render_front(self):
+        user_cookie = self.request.cookies.get('user')
+        posts = Post.all().order('-created')
+        self.render("front.html", posts=posts, user_cookie=user_cookie)
+
+    def get(self):
+        self.render_front()
+        
+
 class WelcomeHandler(Handler):
 
     def get(self):

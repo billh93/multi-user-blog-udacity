@@ -1,21 +1,17 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Add a comment</title>
-</head>
-    <body>
-        <form method="post">
-            <label for="comment">
-                <div>Comment:</div>
-                <textarea name="comment" id="comment">{{comment}}</textarea>
-                <input type="hidden" value="{{post_id}}">
-            </label>
-            <br>
-            {{error}}
-            <br>
-            <input type="submit">
-            <a href="/post/{{post_id}}">Cancel</a>
-        </form>
-    </body>
-</html>
+{% extends "base.html" %}
+{% block title %} Add Comment {% endblock %}
+{% block content %}
+    <h2>Add Comment</h2>
+    <form method="post">
+        <label for="comment">
+            <div>Comment:</div>
+            <textarea name="comment" id="comment">{{comment}}</textarea>
+            <input type="hidden" value="{{post_id}}">
+        </label>
+        <br>
+        {{error}}
+        <br>
+        <input type="submit">
+        <a href="/post/{{post_id}}">Cancel</a>
+    </form>
+{% endblock %}
