@@ -10,7 +10,9 @@
 {% endblock %}
 {% block content %}
         <a href="/"><h1>Blog Page</h1></a>
-        <a href="/new-post">Add a new post</a>
+        {% if user_cookie %}
+            <a href="/new-post">Add a new post</a>
+        {% endif %}
         {% for post in posts %}
             <h3>{{post.subject}}</h3>
             {% if user_owns_post %}

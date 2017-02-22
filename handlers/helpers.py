@@ -1,6 +1,55 @@
 from models import *
 
 
+def comment_exists(comment_id):
+    key = db.Key.from_path('Comment', int(comment_id))
+    comment = db.get(key)
+    if not comment:
+        return self.redirect('/')
+    else:
+        return comment
+
+
+def post_exists(post_id):
+    key = db.Key.from_path('Post', int(post_id))
+    post = db.get(key)
+    if not post:
+        return self.redirect('/')
+    else:
+        return post
+
+
+def user_logged_in(user_cookie):
+    user_id_cookie = user_cookie.split('|')[0]
+    user_hash_cookie = user_cookie.split('|')[1]
+    db_user_id = User.get_by_id(int(user_id_cookie))
+    if db_user_id:
+        if user_hash_cookie == db_user_id.password:
+            return True
+        else:
+            return False
+    else:
+        return False
+
+
+def user_owns_post(post_id, user_id_cookie):
+    post = Post.get_by_id(int(post_id))
+    user_id_from_post = post.user_id
+    if user_id_from_post == int(user_id_cookie):
+        return True
+    else:
+        return False
+
+
+def user_owns_comment(comment_id, user_id_cookie):
+    comment = Comment.get_by_id(int(comment_id))
+    user_id_from_comment = comment.user_id
+    if user_id_from_comment == int(user_id_cookie):
+        return comment
+    else:
+        return False
+
+
 def make_salt():
     return ''.join(choice(ascii_lowercase) for i in range(5))
 
